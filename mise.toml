@@ -1,0 +1,32 @@
+# Tooling and tasks for this cooklang recipe repo.
+# Run `mise tasks` to list, `mise run <task>` to execute.
+
+[tools]
+# https://github.com/cooklang/cookcli
+"github:cooklang/cookcli" = "latest"
+fd = "latest"
+
+[tasks.serve]
+description = "Launch the CookCLI web UI at http://127.0.0.1:9080"
+run = "cook server ."
+
+[tasks.shop]
+description = "Build a shopping list (e.g. `mise run shop dinner/*.cook`)"
+run = "cook shopping-list --aisle config/aisle.conf"
+
+[tasks.scale]
+description = "Scale a recipe by a factor (e.g. `mise run scale 2 dinner/curry.cook`)"
+run = "cook recipe scale"
+
+[tasks.read]
+description = "Print a parsed recipe as JSON (e.g. `mise run read dinner/curry.cook`)"
+run = "cook recipe read --output-format json"
+
+[tasks.check]
+description = "Parse every .cook file to catch syntax errors"
+shell = "bash -c"
+run = '''
+fd -e cook | while read -r f; do
+    cook recipe "$f" --format json > /dev/null && echo "OK: $f" || echo "FAIL: $f"
+done
+'''
