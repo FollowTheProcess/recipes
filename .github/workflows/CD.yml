@@ -44,3 +44,13 @@ jobs:
 
       - name: Deploy Site
         run: aws s3 sync ./public s3://recipes.followtheprocess.codes/recipes/ --delete --sse AES256
+
+      - name: Invalidate CloudFront Cache
+        run: |-
+          DIST_ID=$(aws ssm get-parameter \
+            --name /apps/www.followtheprocess.codes/cloudfront/distribution-id \
+            --query 'Parameter.Value' \
+            --output text)
+          aws cloudfront create-invalidation \
+            --distribution-id "$DIST_ID" \
+            --paths '/recipes' '/recipes/*'
