@@ -1,0 +1,46 @@
+name: CD
+
+on:
+  push:
+    branches:
+      - main
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  deploy:
+    name: Deploy Site
+    runs-on: ubuntu-latest
+    environment:
+      name: live
+      url: https://www.followtheprocess.codes/recipes
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+
+      - name: Set up mise
+        uses: jdx/mise-action@v4
+
+      - name: Build Site
+        run: mise exec -- cook build web ./public --base-url /recipes/
+
+      - name: Assume Deployment Role
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID_PROD }}:role/recipes-upload-role
+          aws-region: "eu-west-2"
+
+      - name: Deploy Site
+        run: aws s3 sync ./public s3://recipes.followtheprocess.codes/recipes/ --delete --sse AES256

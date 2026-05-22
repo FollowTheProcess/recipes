@@ -5,6 +5,11 @@
 # https://github.com/cooklang/cookcli
 "github:cooklang/cookcli" = "latest"
 fd = "latest"
+typos = "latest"
+
+[tasks.build]
+description = "Build as a static website"
+run = "cook build web"
 
 [tasks.serve]
 description = "Launch the CookCLI web UI at http://127.0.0.1:9080"
@@ -22,8 +27,13 @@ run = "cook recipe scale"
 description = "Print a parsed recipe as JSON (e.g. `mise run read dinner/curry.cook`)"
 run = "cook recipe read --output-format json"
 
+[tasks.typos]
+description = "Check for typos"
+run = "typos ."
+
 [tasks.check]
 description = "Parse every .cook file to catch syntax errors"
+depends = "typos"
 shell = "bash -c"
 run = '''
 fd -e cook | while read -r f; do
